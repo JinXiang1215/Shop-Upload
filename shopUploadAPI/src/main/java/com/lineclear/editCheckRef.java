@@ -43,8 +43,6 @@ public class editCheckRef extends DefaultApplicationPlugin {
             return null;
         }
 
-//        LogUtil.info(getClassName(), "✅ Starting execution for parentId: " + parentId);
-
         Map<String, String> refStatusMap = new HashMap<>();
         List<String> existedRefList = new ArrayList<>();
         List<String> freshRefList = new ArrayList<>();
@@ -57,21 +55,17 @@ public class editCheckRef extends DefaultApplicationPlugin {
             return null;
         }
 
-//        LogUtil.info(getClassName(), "📦 Found " + refNumbers.size() + " reference numbers for parentId: " + parentId);
-
         for (String ref : refNumbers) {
-//            LogUtil.info(getClassName(), "🔍 Checking status of reference: " + ref);
-
 
             String result = checkReferenceExists(ref); // Call your API
 
 
             if (result.contains("\"StatusCode\"") && result.contains("\"WayBillNumber\"")) {
-//                LogUtil.info(getClassName(), "✅ Reference EXISTS in system: " + ref);
+
                 refStatusMap.put(ref.toLowerCase(), "EXISTS");
                 existedRefList.add(ref);
             } else if (result.toLowerCase().contains("does not exist")) {
-//                LogUtil.info(getClassName(), "✅ Reference is NEW: " + ref);
+
                 refStatusMap.put(ref.toLowerCase(), "NEW");
                 freshRefList.add(ref);
             } else {
@@ -80,9 +74,6 @@ public class editCheckRef extends DefaultApplicationPlugin {
         }
 
         updateChildStatuses(parentId, refStatusMap);
-
-//        LogUtil.info(getClassName(), "✅ Execution completed for parentId: " + parentId);
-//        LogUtil.info(getClassName(), "🟢 Total EXISTS: " + existedRefList.size() + ", Total NEW: " + freshRefList.size());
 
         return null;
     }
@@ -221,3 +212,4 @@ public class editCheckRef extends DefaultApplicationPlugin {
         }
     }
 }
+
