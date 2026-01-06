@@ -53,38 +53,26 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
         String recordId = httpServletRequest.getParameter("id");
 
         String waybill = httpServletRequest.getParameter("waybill");
-        //LogUtil.info(getClassName(), "🔎 Raw query string: " + httpServletRequest.getQueryString());
-
-        //LogUtil.info(getClass().getName(),"Received API call for ID:"+recordId+",Waybill Number: "+waybill);
 
         if (waybill == null || waybill.trim().isEmpty()) {
             httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing waybill parameter");
             return;
         }
 
-
-
         try {
 
             String authHeader = generateAuthHeader(recordId);
-            //LogUtil.info(getClassName(),"Auth Header"+authHeader);
             if (authHeader == null) {
                 LogUtil.warn(getClassName(), "❌ Authorization header generation failed.");
                 httpServletResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Missing or invalid credentials");
                 return;
             }
-            // ✅ Build the API request
-            //String url = "https://uat-app.lineclearexpressonline.com/DownloadWaybill";
             String url = "https://app.lineclearexpressonline.com/DownloadWaybill";
             JSONObject payload = new JSONObject();
             payload.put("WayBillType", "Parent Waybills");
             payload.put("WayBills", waybill);
             payload.put("PrintOption", "LC WB");
 
-//            LogUtil.info(getClassName(), "Sending payload: " + payload.toString());
-
-            // ✅ Prepare Authorization Header
-            //String authString = "bGluZWNsZWFydGVzdDMyMUBnbWFpbC5jb218VGVzdEAxMjN8U2pPSm1XSTBjeDltSW4yZlQxTXFvaTVMUzVlZERPZEtrYTJONkx0ZEpxTm1ISXZuMHVvVHRpY1okVmliUUJKaA==";
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(url);
             post.setHeader("Content-Type", "application/json");
@@ -95,7 +83,7 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
             int statusCode = apiResponse.getStatusLine().getStatusCode();
 
             if (statusCode == 200) {
-                // ✅ Stream the PDF directly to browser
+
                 httpServletResponse.setContentType("application/pdf");
                 httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"" + waybill + ".pdf\"");
 
@@ -111,7 +99,6 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
                 outStream.close();
                 apiInputStream.close();
 
-//                LogUtil.info(getClassName(), "✅ Waybill PDF streamed for: " + waybill);
             } else {
                 LogUtil.warn(getClassName(), "❌ Failed to download waybill. HTTP Status: " + statusCode);
                 httpServletResponse.sendError(HttpServletResponse.SC_BAD_GATEWAY, "Failed to fetch waybill from external API");
@@ -130,7 +117,6 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
             // ✅ Get OMS Account No
             String omsAccountNo = null;
             String parentId = null;
-            //PreparedStatement ps1 = con.prepareStatement("SELECT c_oms_accountNom FROM app_fd_shop_upload WHERE id = ?");
             PreparedStatement ps1 = con.prepareStatement(
                     "SELECT c_parentId FROM app_fd_shopUpload_records WHERE id = ?"
             );
@@ -202,6 +188,7 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
     }
 
     }
+
 
 
 
