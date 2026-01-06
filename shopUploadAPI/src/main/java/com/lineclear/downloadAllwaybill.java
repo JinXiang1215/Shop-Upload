@@ -75,7 +75,6 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
                         return;
                     }
 
-//                    LogUtil.info(getClass().getName(), "✅ Retrieved waybills from DB for parentId " + parentId + ": " + String.join(",", waybillList));
 
                 } catch (Exception dbEx) {
                     LogUtil.error(getClass().getName(), dbEx, "❌ Error while querying DB for parentId: " + parentId);
@@ -84,7 +83,6 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
                 }
 
             }
-            // ✅ Case 2: Waybill(s) provided directly via URL param
             else if (waybillParam != null && !waybillParam.trim().isEmpty()) {
                 for (String wb : waybillParam.split(",")) {
                     if (!wb.trim().isEmpty()) {
@@ -96,20 +94,16 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
                 return;
             }
 
-            // ✅ Build request payload
+            
             String joinedWaybills = String.join(",", waybillList);
             JSONObject payload = new JSONObject();
             payload.put("WayBillType", "Parent Waybills");
             payload.put("WayBills", joinedWaybills);
             payload.put("PrintOption", "LC WB");
 
-//            LogUtil.info(getClass().getName(), "📤 Sending payload to Line Clear: " + payload.toString());
 
-            // ✅ Prepare API call
-            //String url = "https://uat-app.lineclearexpressonline.com/DownloadWaybill";
             String url = "https://app.lineclearexpressonline.com/DownloadWaybill";
             String authString = generateAuthHeaderFromParentId(parentId);
-            //String authString = "bGluZWNsZWFydGVzdDMyMUBnbWFpbC5jb218VGVzdEAxMjN8U2pPSm1XSTBjeDltSW4yZlQxTXFvaTVMUzVlZERPZEtrYTJONkx0ZEpxTm1ISXZuMHVvVHRpY1okVmliUUJKaA==";
 
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(url);
@@ -133,7 +127,6 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
                         outStream.write(buffer, 0, bytesRead);
                     }
 
-//                    LogUtil.info(getClass().getName(), "✅ Waybill PDF streamed successfully for: " + joinedWaybills);
                 }
 
             } else {
@@ -150,31 +143,27 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
     private String generateAuthHeaderFromParentId(String parentId) {
         String email = "";
         String password = "";
-        String bearerToken = "SjOJmWI0cx9mIn2fT1Mqoi5LS5edDOdKka2N6LtdJqNmHIvn0uoTticZ$VibQBJh"; // static as per your doc
+        String bearerToken = "SjOJmWI0cx9mIn2fT1Mqoi5LS5edDOdKka2N6LtdJqNmHIvn0uoTticZ$VibQBJh"; 
 
         Connection con = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
 
         try {
-            //LogUtil.info(getClass().getName(), "🔍 Starting auth header generation for parentId: " + parentId);
 
             DataSource ds = (DataSource) AppUtil.getApplicationContext().getBean("setupDataSource");
             con = ds.getConnection();
 
-            // 👇 Step 1: Get user_id from parent record
             String userId = "";
             ps = con.prepareStatement("SELECT c_user_id FROM app_fd_shop_upload WHERE id = ?");
             ps.setString(1, parentId);
             rs = ps.executeQuery();
             if (rs.next()) {
                 userId = rs.getString("c_user_id");
-                //LogUtil.info(getClass().getName(), "✅ Retrieved userId: " + userId);
             }
             rs.close();
             ps.close();
 
-            // 👇 Step 2: Get email and password for user_id
             ps = con.prepareStatement("SELECT c_email_hidden, c_password_hidden FROM app_fd_shopUpload_omsUser WHERE c_oms_accountNo_hidden = ?");
             ps.setString(1, userId);
             rs = ps.executeQuery();
@@ -200,81 +189,13 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
             } catch (SQLException ignored) {}
         }
 
-        // 👇 Step 3: Combine and encode
         String raw = email + "|" + password + "|" + bearerToken;
         String encoded = Base64.getEncoder().encodeToString(raw.getBytes(StandardCharsets.UTF_8));
-        //LogUtil.info(getClass().getName(), "🔐 Generated Base64 Auth Header: " + encoded);
 
         return encoded;
     }
 
 
 }
-//    public void webService(HttpServletRequest httpServletRequest, HttpServletResponse httpServletResponse) throws ServletException, IOException {
-//        String recordId = httpServletRequest.getParameter("id");
-//        String waybillParam = httpServletRequest.getParameter("waybill");
-//        String parentId = httpServletRequest.getParameter("parentId");
-//
-//
-//        LogUtil.info(getClass().getName(), "Received API call for ID: " + recordId + ", Waybills: " + waybillParam);
-//
-//        if (waybillParam == null || waybillParam.trim().isEmpty()) {
-//            httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST, "Missing waybill parameter");
-//            return;
-//        }
-//
-//        try {
-//            // ✅ Split multiple waybills into array
-//            String[] waybillArray = waybillParam.split(",");
-//            String joinedWaybills = String.join(",", waybillArray).trim();
-//
-//            // ✅ Build the payload
-//            JSONObject payload = new JSONObject();
-//            payload.put("WayBillType", "Parent Waybills");
-//            payload.put("WayBills", joinedWaybills);
-//            payload.put("PrintOption", "LC WB");
-//
-//            LogUtil.info(getClass().getName(), "Sending payload: " + payload.toString());
-//
-//            // ✅ Make API call
-//            String url = "https://uat-app.lineclearexpressonline.com/DownloadWaybill";
-//            String authString = "bGluZWNsZWFydGVzdDMyMUBnbWFpbC5jb218VGVzdEAxMjN8U2pPSm1XSTBjeDltSW4yZlQxTXFvaTVMUzVlZERPZEtrYTJONkx0ZEpxTm1ISXZuMHVvVHRpY1okVmliUUJKaA==";
-//
-//            HttpClient client = HttpClientBuilder.create().build();
-//            HttpPost post = new HttpPost(url);
-//            post.setHeader("Content-Type", "application/json");
-//            post.setHeader("Authorization", authString);
-//            post.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
-//
-//            HttpResponse apiResponse = client.execute(post);
-//            int statusCode = apiResponse.getStatusLine().getStatusCode();
-//
-//            if (statusCode == 200) {
-//                // ✅ Stream the combined PDF to browser
-//                httpServletResponse.setContentType("application/pdf");
-//                httpServletResponse.setHeader("Content-Disposition", "inline; filename=\"bulk-waybills.pdf\"");
-//
-//                InputStream apiInputStream = apiResponse.getEntity().getContent();
-//                OutputStream outStream = httpServletResponse.getOutputStream();
-//
-//                byte[] buffer = new byte[8192];
-//                int bytesRead;
-//                while ((bytesRead = apiInputStream.read(buffer)) != -1) {
-//                    outStream.write(buffer, 0, bytesRead);
-//                }
-//                outStream.flush();
-//                outStream.close();
-//                apiInputStream.close();
-//
-//                LogUtil.info(getClass().getName(), "✅ Bulk waybill PDF streamed successfully for waybills: " + waybillParam);
-//            } else {
-//                LogUtil.warn(getClass().getName(), "❌ Failed to download waybills. HTTP Status: " + statusCode);
-//                httpServletResponse.sendError(HttpServletResponse.SC_BAD_GATEWAY, "Failed to fetch waybill from external API");
-//            }
-//
-//        } catch (Exception e) {
-//            LogUtil.error(getClass().getName(), e, "Exception while processing bulk waybill PDF");
-//            httpServletResponse.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "Internal error while fetching waybill");
-//        }
-//    }
-//}
+
+
