@@ -84,35 +84,31 @@ public class createShipment extends DefaultApplicationPlugin {
         FormRow formRow = rowSet.get(0);
         String user_Id = formRow.getProperty("c_user_id");
         String omsCode= formRow.getProperty("oms_accountNom");
-//        LogUtil.info(getClassName(), "Extracted userId: " + user_Id);
+
   LogUtil.info(getClassName(),"Extracted oms account id: "+omsCode);
 
         Connection con = null;
         //String userId  =(String)map.get("")
         try {
-//            LogUtil.info(getClassName(),"Create Shipment:Getting DB connection.....");
+
             DataSource ds = (DataSource) AppUtil.getApplicationContext().getBean("setupDataSource");
             con = ds.getConnection();
-            //selecting from shopupload Records with parentID instead of id, parentID link ack to the shop
-            //upload ID created
+           
 
             String userId=getUserIdFromShopUpload(con,recordId);
-           //LogUtil.info(getClassName(), "User ID from app_fd_shop_upload: " + userId);
-            // Only getSenderInfo for testing
+      
 
             //JSONObject senderInfo = getSenderInfo(con, userId);
             JSONObject senderInfo = getSenderInfo(con, omsCode);
-            // Print to server log for debugging
-            //LogUtil.info(getClassName(), "Sender Info JSON:\n" + senderInfo.toString(2));
 
-            // Now get the related shipment records
+
+            
             JSONArray shipments = getShipmentRecords(con, recordId);
-            //LogUtil.info(getClassName(), "Shipment records count: " + shipments.length());
+           
 
             List<String> freshReferences = getFreshShipmentReferences(con, recordId);
 
-            //LogUtil.info(getClassName(), "Shipment records:\n" + shipments.toString(2));
-            // Combine into one payload
+           
             JSONArray shipmentArray = new JSONArray();
             for (int i = 0; i < shipments.length(); i++) {
                 JSONObject shipment = shipments.getJSONObject(i);
@@ -122,15 +118,15 @@ public class createShipment extends DefaultApplicationPlugin {
                 shipment.put("ShipmentAddressFrom", senderInfo.getJSONObject("Address"));
 
                 shipmentArray.put(shipment);
-                //LogUtil.info(getClassName(), "Shipment records count: " + shipments.length());
+               
 
             }
 
             JSONObject finalPayload = new JSONObject();
             finalPayload.put("Shipment", shipmentArray);
-            //LogUtil.info(getClassName(), "Payload being sent to live:\n" + finalPayload.toString(2));
+            
 
-//            String apiUrl = "https://uat-app.lineclearexpressonline.com/Accounts/CreateShipment";
+
             String apiUrl = "https://app.lineclearexpressonline.com/Accounts/CreateShipment";
 
             String responseString = "";
@@ -142,16 +138,13 @@ public class createShipment extends DefaultApplicationPlugin {
                 conn.setRequestProperty("Content-Type","application/json");
                 conn.setRequestProperty("Accept","application/json");
 
-                //  Basic Auth Header
-//                String auth = "linecleartest321@gmail.com:Test@123";
-//                String encodedAuth = Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
-//                conn.setRequestProperty("Authorization", "Basic " + encodedAuth);
+
 
                 String user_id = userId;
-               // String dynamicAuthHeader = getAuthHeaderFromDb(con, user_id);
+               
                 String dynamicAuthHeader = getAuthHeaderByOmsCode(con, omsCode); // omsCode is from form
 
-                //LogUtil.info(getClassName(), "Generated Authorization Header: " + dynamicAuthHeader);
+              
 
                 conn.setRequestProperty("Authorization", dynamicAuthHeader);
                 LogUtil.info(getClassName(),"Create Shipment user_id:"+user_id);
@@ -185,13 +178,13 @@ public class createShipment extends DefaultApplicationPlugin {
                     String reason = jsonResponse.has("Reason") && !jsonResponse.isNull("Reason") ? jsonResponse.opt("Reason").toString() : "";
                     String responseData = jsonResponse.has("ResponseData") && !jsonResponse.isNull("ResponseData") ? jsonResponse.opt("ResponseData").toString() : "";
 
-                    // Log each part
+                   
                     LogUtil.info(getClassName(), "Parsed API Status: " + status);
                     LogUtil.info(getClassName(), "Parsed Message: " + message);
                     LogUtil.info(getClassName(), "Parsed Reason: " + reason);
                     LogUtil.info(getClassName(), "Parsed ResponseData: " + responseData);
 
-                    // ❗ Optional: Save to DB right here, e.g.
+                   
                     PreparedStatement pstmt = con.prepareStatement(
                             "UPDATE app_fd_shop_upload SET c_api_status = ?, c_api_message = ?, c_api_reason = ?, c_api_response_data = ? WHERE id = ?"
                     );
@@ -203,7 +196,7 @@ public class createShipment extends DefaultApplicationPlugin {
                     pstmt.executeUpdate();
                     pstmt.close();
 
-                    // 🧩 Step 1: Generate user-friendly error message
+                    
                     String userMessage;
                     if (reason != null && reason.contains("Invalid email/password for login with Business customer")) {
                         userMessage = " Shipment creation failed: Your OMS email or password is invalid. Please change your password at the OMS edit profile page.";
@@ -212,7 +205,6 @@ public class createShipment extends DefaultApplicationPlugin {
                         userMessage = "Shipment creation successful.";
                         //LogUtil.info(getClassName(), userMessage);
 
-// ❗ Case 3: Unknown failure
                     } else {
                         userMessage = "Shipment creation failed. Please check your shipment data and try again.";
                         LogUtil.warn(getClassName(), userMessage);
@@ -228,34 +220,34 @@ public class createShipment extends DefaultApplicationPlugin {
 
 
                     if (!responseData.isEmpty()) {
-//                        LogUtil.info(getClassName(), "Processing ResponseData...");
+
                         JSONArray responseArray = new JSONArray(responseData);
 
                         if (responseArray.length() != freshReferences.size()) {
-//                            LogUtil.error(getClassName(),null, "Mismatch detected: Response size (" + responseArray.length() + ") does not match FRESH references size (" + freshReferences.size() + "). Aborting update.");
+
                             return "Error: Response size mismatch with FRESH references. No updates made.";
                         }
 
                         for (int i = 0; i < responseArray.length(); i++) {
                             JSONObject responseItem = responseArray.getJSONObject(i);
 
-//                            LogUtil.info(getClassName(), "Response Item " + i + ": " + responseItem.toString());
+
 
                             String waybillNo = "";
                             if (responseItem.has("WayBill")) {
                                 JSONArray waybillArray = responseItem.getJSONArray("WayBill");
-//                                LogUtil.info(getClassName(), "WayBill Array for index " + i + ": " + waybillArray.toString());
+
                                 if (waybillArray.length() > 0) {
                                     waybillNo = waybillArray.getString(0);  // Just take the first WayBill
-//                                    LogUtil.info(getClassName(), "Extracted WayBill No: " + waybillNo);
+
                                 }
                             }
 
                             String referenceNo = (i < freshReferences.size()) ? freshReferences.get(i) : "";
-//                            LogUtil.info(getClassName(), "Mapped ReferenceNo (FRESH only): " + referenceNo);
+
                             // Make sure both values exist before updating
                             if (!referenceNo.isEmpty() && !waybillNo.isEmpty()) {
-//                                LogUtil.info(getClassName(), "Updating DB for ReferenceNo: " + referenceNo + " with WayBill: " + waybillNo);
+
 
                                 PreparedStatement updateStmt = con.prepareStatement(
                                         "UPDATE app_fd_shopUpload_records SET c_waybill = ? WHERE c_reference_number = ? AND c_parentId = ?"
@@ -267,7 +259,7 @@ public class createShipment extends DefaultApplicationPlugin {
                                 //updateStmt.executeUpdate();
                                 updateStmt.close();
 
-//                                LogUtil.info(getClassName(), "Rows updated: " + rowsUpdated);
+
                             } else {
                                 LogUtil.warn(getClassName(), "Missing referenceNo or waybillNo for index " + i);
                             }
@@ -278,7 +270,6 @@ public class createShipment extends DefaultApplicationPlugin {
                 } catch (Exception e) {
                     LogUtil.error(getClassName(), e, "Failed to parse API response");
                 }
-                //later add save response to db
                 return responseString;
 
             }catch (Exception e){
@@ -298,7 +289,7 @@ public class createShipment extends DefaultApplicationPlugin {
             }
         }
     }
-    // Step 1: Extract user ID from shop upload table
+    
     private String getUserIdFromShopUpload(Connection con, String recordId) throws SQLException {
         String userId = null;
         String sql = "SELECT c_user_id FROM app_fd_shop_upload WHERE id = ?";
@@ -319,7 +310,6 @@ public class createShipment extends DefaultApplicationPlugin {
         //address is for shipmentaddressFrom
         JSONObject address = new JSONObject();
 
-//        String sql = "SELECT * FROM app_fd_shopUpload_shipper WHERE c_user_id = ?";
         String sql = "SELECT * FROM app_fd_shopUpload_omsUser WHERE c_oms_accountNo_hidden = ?";
         try (PreparedStatement pstmt = con.prepareStatement(sql)) {
             pstmt.setString(1, omsCode);
@@ -387,28 +377,7 @@ public class createShipment extends DefaultApplicationPlugin {
         return freshReferences;
     }
 
-//    private String getAuthHeaderFromDb(Connection con, String omsAccountCode) throws Exception {
-//        String sql = "SELECT c_email, c_password FROM app_fd_shopUpload_omsUser WHERE c_oms_accountNo = ?";
-//        try (PreparedStatement pstmt = con.prepareStatement(sql)) {
-//            pstmt.setString(1, omsAccountCode);
-//
-//            try (ResultSet rs = pstmt.executeQuery()) {
-//                if (rs.next()) {
-//                    String email = rs.getString("c_email");
-//                    String password = rs.getString("c_password");
-//                    String auth = email + ":" + password;
-//                    return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
-//                } else {
-//                    throw new Exception("OMS Account not found: " + omsAccountCode);
-//                }
-//            }
-//        }
-//    }
-
     private String getAuthHeaderByOmsCode(Connection con, String omsCode) throws Exception {
-//        String sql = "SELECT c_customer_email, c_cust_password FROM app_fd_ao_agent_customer WHERE c_oms_account_code = ? " +
-//                "UNION " +
-//                "SELECT c_customer_email, c_cust_password FROM app_fd_ao_prepaid_acc_main WHERE c_oms_account_code = ?";
 
         String sql = "SELECT c_email_hidden, c_password_hidden FROM app_fd_shopUpload_omsUser WHERE c_oms_accountNo_hidden = ?";
 
@@ -420,9 +389,6 @@ public class createShipment extends DefaultApplicationPlugin {
                 if (rs.next()) {
                     String email = rs.getString("c_email_hidden");
                     String password = rs.getString("c_password_hidden");
-
-//                    LogUtil.info(getClassName(), "Fetched Email: " + email);
-//                    LogUtil.info(getClassName(), "Fetched Password: " + password);
 
                     String auth = email + ":" + password;
                     return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
@@ -445,10 +411,6 @@ public class createShipment extends DefaultApplicationPlugin {
                     String email = rs.getString("c_email");
                     String password = rs.getString("c_password");
 
-                    // 🔍 Add these logs for debugging
-//                    LogUtil.info(getClassName(), "Fetched Email: " + email);
-//                    LogUtil.info(getClassName(), "Fetched Password: " + password);
-
                     String auth = email + ":" + password;
                     return "Basic " + Base64.getEncoder().encodeToString(auth.getBytes(StandardCharsets.UTF_8));
 
@@ -458,7 +420,6 @@ public class createShipment extends DefaultApplicationPlugin {
             }
         }
     }
-    //for shipmentaddressto, reference number and other seperate variables.
     private JSONArray getShipmentRecords(Connection con,String parentId) throws Exception{
         JSONArray records = new JSONArray();
 
@@ -515,3 +476,4 @@ public class createShipment extends DefaultApplicationPlugin {
 
 //    private JSONArray getShipmentRecords
 }
+
