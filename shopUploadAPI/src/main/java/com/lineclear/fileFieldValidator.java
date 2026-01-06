@@ -44,7 +44,7 @@ public class fileFieldValidator extends FormValidator {
     @Override
     public boolean validate(Element element, FormData formData, String[] strings) {
         try {
-            // Get uploaded file path from form field
+           
             String filePath = FormUtil.getElementPropertyValue(element, formData);
 
             if (filePath == null || filePath.isEmpty()) {
@@ -53,10 +53,6 @@ public class fileFieldValidator extends FormValidator {
                 return false;
             }
 
-            //LogUtil.info("TemplateValidation", "Uploaded file UUID path: " + filePath);
-
-
-            //File excelFile = new File(fileStoragePath);
             File excelFile = org.joget.commons.util.FileManager.getFileByPath(filePath);
 
             if (excelFile == null) {
@@ -65,20 +61,14 @@ public class fileFieldValidator extends FormValidator {
                 return false;
             }
 
-            //LogUtil.info("TemplateValidation", "Actual File Absolute Path: " + excelFile.getAbsolutePath());
-
             if (!excelFile.exists()) {
                 LogUtil.warn("TemplateValidation", "Uploaded file not found at path: " +  excelFile.getAbsolutePath());
                 formData.addFormError(FormUtil.getElementParameterName(element), "Uploaded file not found.");
                 return false;
             }
 
-            //LogUtil.info("TemplateValidation", "Excel File successfully found: " + excelFile.getName());
-
-            // ✅ Get the root form
             Form form = FormUtil.findRootForm(element);
 
-            // ✅ Get Select Platform Element
             Element selectPlatformElement = FormUtil.findElement("select_platform", form, formData);
             String platformValue = "";
             if (selectPlatformElement != null) {
@@ -89,23 +79,17 @@ public class fileFieldValidator extends FormValidator {
                 return false;
             }
 
-            // ✅ Get Shipment Type Element
             Element shipmentTypeElement = FormUtil.findElement("shipment_type", form, formData);
             String shipmentType = "";
             if (shipmentTypeElement != null) {
                 shipmentType = FormUtil.getElementPropertyValue(shipmentTypeElement, formData);
             }
 
-            // ✅ Get OMS Account Element
             Element omsAccountElement = FormUtil.findElement("oms_accountNom", form, formData);
             String omsAccount = "";
             if (omsAccountElement != null) {
                 omsAccount = FormUtil.getElementPropertyValue(omsAccountElement, formData);
             }
-
-            //LogUtil.info("TemplateValidation", "Platform Value: " + platformValue);
-            //LogUtil.info("TemplateValidation", "Shipment Type: " + shipmentType) if(expectedColumns==null||expectedColumns.isEmpty());
-            //LogUtil.info("TemplateValidation", "OMS Account: " + omsAccount);
 
             List<String> expectedColumns = fetchExpectedColumns(platformValue);
             LogUtil.info("TemplateValidation", "PlatformValue: " + platformValue +
@@ -176,7 +160,6 @@ public class fileFieldValidator extends FormValidator {
             }
             in.close();
 
-//            LogUtil.info("ValidationFilePlugin","Raw API response:"+response.toString());
 
             JSONArray jsonArray = new JSONArray(response.toString());
             if(jsonArray.length()>0){
@@ -187,11 +170,6 @@ public class fileFieldValidator extends FormValidator {
                 LogUtil.warn("ValidationFilePlugin","Empty response array from API for recordId:"+recordId);
             }
 
-//            JSONObject jsonResponse = new JSONObject(response.toString());
-//            if(jsonResponse.has("c_select_platform")){
-//                platformValue = jsonResponse.getString("c_select_platform");
-//            }
-
         }catch (IOException | JSONException e){
             LogUtil.error("ValidationFilePlugin",e,"Error Fetching platform value from API.");
         }
@@ -200,7 +178,7 @@ public class fileFieldValidator extends FormValidator {
 
     private List<String> fetchExpectedColumns(String platformValue) throws IOException {
         String apiUrl = "https://btc.lineclearexpress.com/jw/web/json/plugin/com.lineclear.TemplateAPI/service?refId=" + platformValue;
-        //LogUtil.info("ValidationFilePlugin", "full column api:" + apiUrl);
+
 
         URL url = new URL(apiUrl);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -215,7 +193,6 @@ public class fileFieldValidator extends FormValidator {
         }
         in.close();
 
-        //LogUtil.info("ValidationFilePlugin", "API Response for expected columns: " + response.toString());
 
         List<String> expectedColumns = new ArrayList<>();
 
@@ -245,3 +222,4 @@ public class fileFieldValidator extends FormValidator {
         return expectedColumns;
     }
 }
+
