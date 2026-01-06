@@ -51,14 +51,12 @@ public class validationFile extends DefaultApplicationPlugin {
 
         try {
             WorkflowAssignment wfAssignment = (WorkflowAssignment) map.get("workflowAssignment");
-            //WorkflowManager wManager = (WorkflowManager) map.get("workflowManager");
             WorkflowManager wManager = (WorkflowManager) AppUtil.getApplicationContext().getBean("workflowManager");
             PluginManager pManager = (PluginManager) map.get("pluginManager");
             String recordId = (String) map.get("recordId");
             String fileName = null;
 
             if (wManager != null) {
-                //wManager.activityVariables(wfAssignment.getActivityId(), variables);
                 LogUtil.warn("ValidationFilePlugin", "WorkflowManager " +wManager);
             } else {
                 LogUtil.warn("ValidationFilePlugin", "WorkflowManager is null. Cannot update activity variables.");
@@ -78,7 +76,6 @@ public class validationFile extends DefaultApplicationPlugin {
 
                 fileName = getFileName(con, recordId);
                 if (fileName != null) {
-                    //LogUtil.info("ValidationFilePlugin", "File name found: " + fileName);
 
                     File excelFile = FileUtil.getFile(fileName, "packageSku_upload", recordId);
                     if (excelFile != null && excelFile.exists()) {
@@ -98,7 +95,7 @@ public class validationFile extends DefaultApplicationPlugin {
                             while (cellIterator.hasNext()) {
                                 Cell cell = cellIterator.next();
                                 excelColumns.add(cell.getStringCellValue());
-                                //LogUtil.info("","Columns: " + cell.getStringCellValue());
+
                             }
 
 
@@ -106,14 +103,13 @@ public class validationFile extends DefaultApplicationPlugin {
                             List<String> requiredColumns = Arrays.asList(column1, column2, column3, column4);
                             if (excelColumns.equals(requiredColumns)) {
                                 status = "Success";
-                                //LogUtil.info("Status", "Valid");
 
                             } else if (excelColumns.containsAll(requiredColumns)) {
                                 status = "Failed";
-                                //LogUtil.info("Status", "Invalid - Correct columns but wrong order");
+
                             } else {
                                 status = "Failed";
-                                //LogUtil.info("Status", "Invalid");
+
                             }
                             updateStatus(con, recordId, status);
                             LogUtil.info("ValidationFilePlugin", "Updated c_status to: " + status);
@@ -221,3 +217,4 @@ public class validationFile extends DefaultApplicationPlugin {
         }
     }
 }
+
