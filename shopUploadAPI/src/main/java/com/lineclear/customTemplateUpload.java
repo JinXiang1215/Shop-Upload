@@ -32,8 +32,6 @@ public class customTemplateUpload extends DefaultApplicationPlugin {
                 }
             }
 
-//            LogUtil.info(getClassName(), "Processing Custom Template Upload for recordId: " + primaryKey);
-
             FormDataDao formDataDao = (FormDataDao) AppUtil.getApplicationContext().getBean("formDataDao");
 
 
@@ -47,25 +45,9 @@ public class customTemplateUpload extends DefaultApplicationPlugin {
                 return null;
             }
 
-//            for (Map.Entry<Object, Object> entry : row.entrySet()) {
-//                LogUtil.info(getClassName(), "Field: " + entry.getKey() + " = " + entry.getValue());
-//            }
-
-
-//            String platform = row.getProperty("platform");
-//            String customName = row.getProperty("name");
-//
-//            LogUtil.info(getClassName(),"platform and customName="+platform+"and"+customName);
-//
-//            String combined = (platform != null ? platform : "")
-//                    + (customName != null && !customName.trim().isEmpty() ? " - " + customName.trim() : "");
-//
-//            row.setProperty("c_platformName", combined);
             String platformId = row.getProperty("platform");
             String platformName = getPlatformNameById(platformId);
             String customName = row.getProperty("name");
-
-//            LogUtil.info(getClassName(), "platformId=" + platformId + ", platformName=" + platformName + ", customName=" + customName);
 
             String combined = (platformName != null ? platformName : "")
                     + (customName != null && !customName.trim().isEmpty() ? " - " + customName.trim() : "");
@@ -79,8 +61,6 @@ public class customTemplateUpload extends DefaultApplicationPlugin {
             updatedRowSet.setMultiRow(false); // Only updating one row
 
             formDataDao.saveOrUpdate(formDefId, tableName, updatedRowSet);
-
-//            LogUtil.info(getClassName(), "✅ Updated recordId " + primaryKey + " → c_platformName = " + combined);
 
         } catch (Exception e) {
             LogUtil.error(getClassName(), e, "❌ Error in CustomTemplateUpload plugin");
@@ -141,3 +121,4 @@ public class customTemplateUpload extends DefaultApplicationPlugin {
         return new PluginProperty[0]; // no config needed
     }
 }
+
