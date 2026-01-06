@@ -27,8 +27,6 @@ public class insertRecords {
     private String tableName;
     private String fileName;
 
-
-    // Constructor to initialize with file details
     public insertRecords(String recordId, String tableName, String fileName) {
         this.recordId = recordId;
         this.tableName = tableName;
@@ -56,33 +54,6 @@ public class insertRecords {
             DataSource ds = (DataSource) AppUtil.getApplicationContext().getBean("setupDataSource");
             con = ds.getConnection();
 
-        // Open the file
-//            try (FileInputStream file = new FileInputStream(excel)) {
-//                // Create a workbook instance for the file
-//                XSSFWorkbook workbook = new XSSFWorkbook(file);
-//                // Get the first sheet
-//                XSSFSheet sheet = workbook.getSheetAt(0);
-//
-//                // Iterate through rows
-//                Iterator<Row> rowIterator = sheet.iterator();
-//
-//                if (rowIterator.hasNext()) {
-//                    Row row = rowIterator.next(); // Read the first row
-//
-//                    // Iterate through all the columns in the row
-//                    Iterator<Cell> cellIterator = row.cellIterator();
-//
-//                    while (cellIterator.hasNext()) {
-//                        Cell cell = cellIterator.next();
-//                        // Assuming the cell contains string data
-//                        LogUtil.info("Records", "Cell Value: " + cell.getStringCellValue());
-//                    }
-//                }
-//
-//                // Close the workbook
-//                workbook.close();
-//            }
-
             try(FileInputStream file = new FileInputStream(excel)){
                 XSSFWorkbook workbook = new XSSFWorkbook(file);
                 XSSFSheet sheet = workbook.getSheetAt(0);
@@ -95,7 +66,6 @@ public class insertRecords {
 
                 List<String> columnNames = new ArrayList<>();
 
-                // Format the column names in excel to become like in the table. This method are use so that it know which field need to insert where
                 for (Cell cell : headerRow){
                     if(cell != null && cell.getCellType() == CellType.STRING){
                         String columnName = cell.getStringCellValue().trim();
@@ -105,7 +75,6 @@ public class insertRecords {
                         }
                     }
                 }
-                //LogUtil.info("insertRecords", "Number of columns: " + columnNames.size());
 
                 String dbIdColumn = "id";
                 columnNames.add(0, dbIdColumn);
@@ -177,9 +146,6 @@ public class insertRecords {
 
                 workbook.close();
 
-                //LogUtil.info("insertRecords", "Records inserted successfully.");
-                //response.getWriter().write("Records inserted successfully.");
-
             }
 
          } catch (SQLException e) {
@@ -195,4 +161,5 @@ public class insertRecords {
         }
     }
 }
+
 
