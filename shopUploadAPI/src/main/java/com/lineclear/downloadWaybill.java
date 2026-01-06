@@ -44,14 +44,12 @@ public class downloadWaybill extends DefaultApplicationPlugin {
     public Object execute(Map map) {
         try {
             String recordId = (String) map.get("recordId");
-            //String appId = (String) map.get("appId");
 
             if (recordId == null) {
-//                LogUtil.info(getClassName(), "Missing recordId or appId");
+
                 return null;
             }
 
-            //here to
 
             String sql = "SELECT c_waybill FROM app_fd_shopUpload_records WHERE c_parentId=?";
             String waybill = null;
@@ -85,80 +83,28 @@ public class downloadWaybill extends DefaultApplicationPlugin {
                     throw new RuntimeException("Database error during polling", e);
                 }
 
-//                LogUtil.info(getClassName(), "Waybill not yet available for parentId: " + recordId+ ", retrying in 1 second...");
+
                 retryCount++;
                 try {
                     Thread.sleep(retryDelayMs);
                 } catch (InterruptedException ignored) {}
             }
-//            while (retryCount < maxRetries) {
-//                try (Connection con = ds.getConnection();
-//                     PreparedStatement stmt = con.prepareStatement(sql)) {
-//
-//                    stmt.setString(1, recordId);
-//                    try (ResultSet rs = stmt.executeQuery()) {
-//                        if (rs.next()) {
-//                            waybill = rs.getString("c_waybill");
-//                            if (waybill != null && !waybill.trim().isEmpty()) {
-//                                break; // ✅ Found waybill, break out of loop
-//                            }
-//                        }
-//                    }
-//                } catch (SQLException e) {
-//                    throw new RuntimeException("Database error during polling", e);
-//                }
-//
-//                LogUtil.info(getClassName(), "Waybill not yet available, retrying in 1 second...");
-//                retryCount++;
-//                try {
-//                    Thread.sleep(retryDelayMs); // wait before next poll
-//                } catch (InterruptedException ignored) {}
-//            }
-            //here can be replaced by the commented below
 
-//            String sql = "SELECT c_waybill FROM app_fd_shopUpload_records WHERE c_parentId=?";
-//            Connection con = null;
-//            PreparedStatement stmt = null;
-//            ResultSet rs = null;
-//            String waybill = null;
-//
-//            try {
-//                LogUtil.info(getClassName(), "Create Shipment: Getting DB connection...");
-//                DataSource ds = (DataSource) AppUtil.getApplicationContext().getBean("setupDataSource");
-//                con = ds.getConnection();
-//                stmt = con.prepareStatement(sql);
-//                stmt.setString(1, recordId);
-//                rs = stmt.executeQuery();
-//                if (rs.next()) {
-//                    waybill = rs.getString("c_waybill");
-//                }
-//            } catch (SQLException e) {
-//                throw new RuntimeException("Database error", e);
-//            } finally {
-//                try { if (rs != null) rs.close(); } catch (Exception ignored) {}
-//                try { if (stmt != null) stmt.close(); } catch (Exception ignored) {}
-//                try { if (con != null) con.close(); } catch (Exception ignored) {}
-//            }
 
-            // Do something with the waybill...
+            
             if(waybill==null){
-//                LogUtil.info(getClassName(),"No waybill found for recordId"+recordId);
+
                 return null;
             }
 
-//            LogUtil.info(getClassName(), "Waybill: " + waybill);
 
-
-            //here is to start building API requestbody
             String url = "https://uat-app.lineclearexpressonline.com/DownloadWaybill";
             JSONObject payload = new JSONObject();
             payload.put("WayBillType","Parent Waybills");
             payload.put("WayBills",waybill);
             payload.put("PrintOption","LC WB");
 
-//            LogUtil.info(getClassName(), "Payload sent: " + payload.toString());
-
-            //To prepare the Authorization Header
+          
             String authString = "bGluZWNsZWFydGVzdDMyMUBnbWFpbC5jb218VGVzdEAxMjN8U2pPSm1XSTBjeDltSW4yZlQxTXFvaTVMUzVlZERPZEtrYTJONkx0ZEpxTm1ISXZuMHVvVHRpY1okVmliUUJKaA==";
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(url);
@@ -166,20 +112,14 @@ public class downloadWaybill extends DefaultApplicationPlugin {
             post.setHeader("Authorization",authString);
             post.setEntity(new StringEntity(payload.toString(), ContentType.APPLICATION_JSON));
 
-//            StringEntity entity = new StringEntity(payload.toString(), "UTF-8");
-//            post.setEntity(entity);
-
             StringEntity entity = new StringEntity(payload.toString(), ContentType.APPLICATION_JSON);
             post.setEntity(entity);
 
             HttpResponse response = client.execute(post);
             int statusCode = response.getStatusLine().getStatusCode();
 
-//            LogUtil.info(getClassName(), "API Response Status Code: " + statusCode);
-
             if(statusCode==200){
                 byte[] pdfBytes = EntityUtils.toByteArray(response.getEntity());
-//                LogUtil.info(getClassName(),"Received PDF with size:"+pdfBytes.length+"bytes");
 
                 String filename = recordId + ".pdf";
                 File pdfFile = new File(filename);
@@ -188,15 +128,11 @@ public class downloadWaybill extends DefaultApplicationPlugin {
                     fos.write(pdfBytes);
                     LogUtil.info(getClassName(), "Saved PDF to " + filename);
                 }
-//                LogUtil.info(getClassName(), "PDF saved temporarily for testing.");
-//                try (FileOutputStream fos = new FileOutputStream("/tmp/test_waybill.pdf")) {
-//                    fos.write(pdfBytes);
-//                }
+                
                 //File pdfFile = new File("/tmp/test_waybill.pdf");
                 if (pdfFile.exists()) {
                     String tableName = "app_fd_shopUpload_records";
                     FileUtil.storeFile(pdfFile, tableName, recordId);
-//                    LogUtil.info(getClassName(), "Waybill PDF stored successfully using FileUtil.");
                     saveWaybillFilenameToDb(recordId, recordId+".pdf");
 
                     File retrievedFile = FileUtil.getFile(String.valueOf(pdfFile),tableName,recordId);
@@ -228,7 +164,6 @@ public class downloadWaybill extends DefaultApplicationPlugin {
             pstmt.setString(1, filename);  // Example: "53ac492e-...pdf"
             pstmt.setString(2, recordId);
             pstmt.executeUpdate();
-//            LogUtil.info(getClassName(), "✅ Waybill file name saved to DB: " + filename);
         } catch (SQLException e) {
             LogUtil.error(getClassName(), e, "❌ Error saving file name to DB");
         } finally {
@@ -248,3 +183,4 @@ public class downloadWaybill extends DefaultApplicationPlugin {
     @Override
     public String getPropertyOptions() {return "";}
 }
+
