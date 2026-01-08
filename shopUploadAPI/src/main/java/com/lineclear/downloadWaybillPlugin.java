@@ -111,7 +111,7 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
     }
 
     private String generateAuthHeader(String recordId) {
-        String bearer = "SjOJmWI0cx9mIn2fT1Mqoi5LS5edDOdKka2N6LtdJqNmHIvn0uoTticZ$VibQBJh"; // Your static bearer
+        String bearer = "YOUR_API_KEY_HERE"; // Your static bearer
         try (Connection con = AppUtil.getApplicationContext().getBean(DataSource.class).getConnection()) {
 
             // ✅ Get OMS Account No
@@ -188,6 +188,7 @@ public class downloadWaybillPlugin extends ExtDefaultPlugin implements PluginWeb
     }
 
     }
+
 
 
 
