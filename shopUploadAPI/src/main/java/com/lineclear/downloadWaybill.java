@@ -105,7 +105,7 @@ public class downloadWaybill extends DefaultApplicationPlugin {
             payload.put("PrintOption","LC WB");
 
           
-            String authString = "bGluZWNsZWFydGVzdDMyMUBnbWFpbC5jb218VGVzdEAxMjN8U2pPSm1XSTBjeDltSW4yZlQxTXFvaTVMUzVlZERPZEtrYTJONkx0ZEpxTm1ISXZuMHVvVHRpY1okVmliUUJKaA==";
+            String authString = "YOUR_API_KEY_HERE";
             HttpClient client = HttpClientBuilder.create().build();
             HttpPost post = new HttpPost(url);
             post.setHeader("Content-Type","application/json");
@@ -183,4 +183,5 @@ public class downloadWaybill extends DefaultApplicationPlugin {
     @Override
     public String getPropertyOptions() {return "";}
 }
+
 
