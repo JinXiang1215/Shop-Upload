@@ -48,7 +48,7 @@ public class credentialValidator extends FormValidator {
 
    
         try{
-            String bearerToken = "SjOJmWI0cx9mIn2fT1Mqoi5LS5edDOdKka2N6LtdJqNmHIvn0uoTticZ$VibQBJh";
+            String bearerToken = "YOUR_API_KEY_HERE";
             String rawAuth = email+"|"+password+"|"+bearerToken;
 
             
@@ -132,4 +132,5 @@ public class credentialValidator extends FormValidator {
     }
 
 }
+
 
