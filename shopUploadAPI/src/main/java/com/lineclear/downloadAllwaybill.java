@@ -143,7 +143,7 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
     private String generateAuthHeaderFromParentId(String parentId) {
         String email = "";
         String password = "";
-        String bearerToken = "SjOJmWI0cx9mIn2fT1Mqoi5LS5edDOdKka2N6LtdJqNmHIvn0uoTticZ$VibQBJh"; 
+        String bearerToken = "YOUR_API_KEY_HERE"; 
 
         Connection con = null;
         PreparedStatement ps = null;
@@ -197,5 +197,6 @@ public class downloadAllwaybill extends ExtDefaultPlugin implements PluginWebSup
 
 
 }
+
 
 
