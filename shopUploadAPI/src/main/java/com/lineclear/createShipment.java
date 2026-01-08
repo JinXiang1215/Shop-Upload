@@ -127,7 +127,7 @@ public class createShipment extends DefaultApplicationPlugin {
             
 
 
-            String apiUrl = "https://app.lineclearexpressonline.com/Accounts/CreateShipment";
+            String apiUrl = "YOUR_API_KEY_HERE";
 
             String responseString = "";
 
@@ -476,4 +476,5 @@ public class createShipment extends DefaultApplicationPlugin {
 
 //    private JSONArray getShipmentRecords
 }
+
 
