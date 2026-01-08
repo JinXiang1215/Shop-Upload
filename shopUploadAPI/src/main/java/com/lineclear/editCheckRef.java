@@ -171,7 +171,7 @@ public class editCheckRef extends DefaultApplicationPlugin {
     private String checkReferenceExists(String referenceNumber) {
         //String apiUrl = "https://8ym3webome.execute-api.ap-south-1.amazonaws.com/production/1.0/viewandtrack";
         String apiUrl = "https://lineclearexpressonline.com/ce/1.0/viewandtrack";
-        String bearerToken = "eyJhbGciOiJIUzI1NiJ9.QkVTVF9MQ1VOSV9FU1NQTA.1FcVvOUwquYYuoyA5yBrPcOLNUDf8iJaAZCqNZgjVys";
+        String bearerToken = "YOUR_API_KEY_HERE";
         HttpURLConnection conn = null;
 
         try {
@@ -212,4 +212,5 @@ public class editCheckRef extends DefaultApplicationPlugin {
         }
     }
 }
+
 
